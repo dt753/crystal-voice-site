@@ -1,7 +1,5 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase-server'
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 async function serverFetch(path: string, token: string, options?: RequestInit) {
@@ -20,24 +18,18 @@ async function serverFetch(path: string, token: string, options?: RequestInit) {
   return res.json()
 }
 
-export async function getSubscriptionAction(): Promise<{ data?: unknown; error?: string }> {
+export async function getSubscriptionAction(token: string): Promise<{ data?: unknown; error?: string }> {
   try {
-    const supabase = createServerSupabaseClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return { error: 'Не авторизован' }
-    const data = await serverFetch('/subscription', session.access_token)
+    const data = await serverFetch('/subscription', token)
     return { data }
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Ошибка загрузки подписки' }
   }
 }
 
-export async function applyReferralAction(code: string): Promise<{ error?: string }> {
+export async function applyReferralAction(token: string, code: string): Promise<{ error?: string }> {
   try {
-    const supabase = createServerSupabaseClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return { error: 'Не авторизован' }
-    await serverFetch('/referral/apply', session.access_token, {
+    await serverFetch('/referral/apply', token, {
       method: 'POST',
       body: JSON.stringify({ code }),
     })

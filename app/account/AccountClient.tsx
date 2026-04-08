@@ -226,18 +226,22 @@ export default function AccountClient() {
 
   const loadSub = useCallback(async () => {
     if (!user) return
-    const { data, error } = await getSubscriptionAction()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const { data, error } = await getSubscriptionAction(session.access_token)
     if (error) setSubError(error)
     else setSub(data as SubscriptionStatus)
-  }, [user])
+  }, [user, supabase.auth])
 
   useEffect(() => { loadSub() }, [loadSub])
 
   const handleApplyReferral = useCallback(async (code: string) => {
-    const { error } = await applyReferralAction(code)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('Не авторизован')
+    const { error } = await applyReferralAction(session.access_token, code)
     if (error) throw new Error(error)
     await loadSub()
-  }, [loadSub])
+  }, [supabase.auth, loadSub])
 
   if (user === undefined) {
     return (
