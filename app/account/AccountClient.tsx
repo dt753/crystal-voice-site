@@ -9,60 +9,77 @@ import type { User } from '@supabase/supabase-js'
 
 function AuthForm() {
   const supabase = createClient()
+  const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  async function handleMagicLink(e: React.FormEvent) {
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-void-800/80 border border-white/10 focus:border-crystal-500/60 text-white placeholder-slate-500 text-sm outline-none transition-colors"
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${location.origin}/account` },
-    })
-    setLoading(false)
-    if (error) { setError(error.message); return }
-    setSent(true)
-  }
+    setSuccess(null)
 
-  if (sent) {
-    return (
-      <div className="max-w-md mx-auto text-center card p-10">
-        <div className="text-4xl mb-4">📬</div>
-        <h2 className="font-bold text-white text-xl mb-2">Проверь почту</h2>
-        <p className="text-slate-400 text-sm">
-          Мы отправили магическую ссылку на <span className="text-crystal-300">{email}</span>.
-          Перейди по ней для входа.
-        </p>
-      </div>
-    )
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) setError(error.message === 'Invalid login credentials' ? 'Неверный email или пароль' : error.message)
+    } else {
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) setError(error.message)
+      else setSuccess('Аккаунт создан! Теперь войди с теми же данными.')
+    }
+    setLoading(false)
   }
 
   return (
     <div className="max-w-md mx-auto">
       <div className="card p-8">
-        <h2 className="font-bold text-white text-xl mb-2">Войти в аккаунт</h2>
-        <p className="text-slate-400 text-sm mb-6">
-          Введи email — пришлём ссылку для входа без пароля.
-        </p>
-        <form onSubmit={handleMagicLink} className="space-y-4">
+        <div className="flex rounded-xl bg-void-800/60 p-1 mb-6">
+          <button
+            type="button"
+            onClick={() => { setMode('login'); setError(null); setSuccess(null) }}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'login' ? 'bg-crystal-600 text-white' : 'text-slate-400 hover:text-white'}`}
+          >
+            Войти
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMode('register'); setError(null); setSuccess(null) }}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'register' ? 'bg-crystal-600 text-white' : 'text-slate-400 hover:text-white'}`}
+          >
+            Регистрация
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="email"
             required
-            placeholder="you@example.com"
+            placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-void-800/80 border border-white/10 focus:border-crystal-500/60 text-white placeholder-slate-500 text-sm outline-none transition-colors"
+            className={inputClass}
+          />
+          <input
+            type="password"
+            required
+            minLength={6}
+            placeholder="Пароль"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className={inputClass}
           />
           {error && <p className="text-red-400 text-xs">{error}</p>}
+          {success && <p className="text-green-400 text-xs">{success}</p>}
           <button
             type="submit"
             disabled={loading}
             className="btn-primary w-full justify-center disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? 'Отправка...' : 'Получить ссылку для входа'}
+            {loading ? '...' : mode === 'login' ? 'Войти' : 'Создать аккаунт'}
           </button>
         </form>
       </div>
