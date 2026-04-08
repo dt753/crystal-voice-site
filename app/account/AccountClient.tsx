@@ -26,7 +26,7 @@ function AuthForm() {
 
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setError(error.message === 'Invalid login credentials' ? 'Неверный email или пароль' : error.message)
+      if (error) setError('Неверный email или пароль')
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setError(error.message)
@@ -125,16 +125,27 @@ function SubscriptionCard({ sub }: { sub: SubscriptionStatus }) {
   )
 }
 
+function validateReferralCode(code: string): string | null {
+  if (!code.trim()) return 'Введи код'
+  if (code.length > 50) return 'Код слишком длинный'
+  if (!/^[A-Za-z0-9_-]+$/.test(code)) return 'Код может содержать только буквы и цифры'
+  return null
+}
+
 function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: string) => Promise<void> }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [lastAttempt, setLastAttempt] = useState(0)
 
   async function handleApply(e: React.FormEvent) {
     e.preventDefault()
-    if (!input.trim()) return
+    const validationError = validateReferralCode(input)
+    if (validationError) { setError(validationError); return }
+    if (Date.now() - lastAttempt < 3000) { setError('Подождите перед следующей попыткой'); return }
+    setLastAttempt(Date.now())
     setLoading(true)
     setError(null)
     try {
