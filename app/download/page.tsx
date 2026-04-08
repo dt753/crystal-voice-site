@@ -14,10 +14,14 @@ type GithubRelease = { tag_name: string; assets: GithubAsset[] }
 
 async function getLatestRelease(): Promise<{ version: string; winUrl: string | null; macUrl: string | null }> {
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
     const res = await fetch('https://api.github.com/repos/dt753/Voice-Typer/releases/latest', {
       headers: { Accept: 'application/vnd.github+json' },
       next: { revalidate: 3600 },
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
     if (!res.ok) throw new Error('GitHub API error')
     const data: GithubRelease = await res.json()
 

@@ -1,5 +1,7 @@
 'use server'
 
+import type { SubscriptionStatus } from '@/lib/supabase'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 async function serverFetch(path: string, token: string, options?: RequestInit) {
@@ -18,7 +20,7 @@ async function serverFetch(path: string, token: string, options?: RequestInit) {
   return res.json()
 }
 
-export async function getSubscriptionAction(token: string): Promise<{ data?: unknown; error?: string }> {
+export async function getSubscriptionAction(token: string): Promise<{ data?: SubscriptionStatus; error?: string }> {
   try {
     const data = await serverFetch('/subscription', token)
     return { data }

@@ -29,8 +29,11 @@ function AuthForm() {
       if (error) setError('Неверный email или пароль')
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
-      if (error) setError(error.message)
-      else setSuccess('Аккаунт создан! Теперь войди с теми же данными.')
+      if (error) {
+        if (error.message.includes('already registered')) setError('Этот email уже зарегистрирован')
+        else if (error.message.includes('weak') || error.message.includes('password')) setError('Пароль слишком простой. Минимум 6 символов')
+        else setError('Ошибка регистрации. Попробуй ещё раз')
+      } else setSuccess('Аккаунт создан! Теперь войди с теми же данными.')
     }
     setLoading(false)
   }
@@ -230,7 +233,7 @@ export default function AccountClient() {
     if (!session) return
     const { data, error } = await getSubscriptionAction(session.access_token)
     if (error) setSubError(error)
-    else setSub(data as SubscriptionStatus)
+    else if (data) setSub(data)
   }, [user, supabase.auth])
 
   useEffect(() => { loadSub() }, [loadSub])
@@ -267,7 +270,10 @@ export default function AccountClient() {
         ) : (
           <div className="space-y-5">
             {subError ? (
-              <div className="card p-4 text-red-400 text-sm">{subError}</div>
+              <div className="card p-4 flex items-center justify-between gap-4">
+                <p className="text-red-400 text-sm">{subError}</p>
+                <button onClick={() => { setSubError(null); loadSub() }} className="text-xs text-slate-400 hover:text-white shrink-0 transition-colors">Повторить</button>
+              </div>
             ) : sub ? (
               <SubscriptionCard sub={sub} />
             ) : (
