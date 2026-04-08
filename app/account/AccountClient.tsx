@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { getSubscription, applyReferral } from '@/lib/api'
-import type { SubscriptionStatus } from '@/lib/supabase'
+import { getSubscriptionAction, applyReferralAction } from '@/app/actions/subscription'
 import type { User } from '@supabase/supabase-js'
+import type { SubscriptionStatus } from '@/lib/supabase'
 
 function AuthForm() {
   const supabase = createClient()
@@ -226,24 +226,20 @@ export default function AccountClient() {
 
   const loadSub = useCallback(async () => {
     if (!user) return
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
     try {
-      const data = await getSubscription(session.access_token)
+      const data = await getSubscriptionAction()
       setSub(data)
     } catch (err: unknown) {
       setSubError(err instanceof Error ? err.message : 'Ошибка загрузки подписки')
     }
-  }, [user, supabase.auth])
+  }, [user])
 
   useEffect(() => { loadSub() }, [loadSub])
 
   const handleApplyReferral = useCallback(async (code: string) => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Не авторизован')
-    await applyReferral(session.access_token, code)
+    await applyReferralAction(code)
     await loadSub()
-  }, [supabase.auth, loadSub])
+  }, [loadSub])
 
   if (user === undefined) {
     return (
