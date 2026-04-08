@@ -213,7 +213,7 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
   )
 }
 
-function UsernameCard({ userId, supabase }: { userId: string; supabase: ReturnType<typeof createClient> }) {
+function UsernameCard({ userId, supabase, onSave }: { userId: string; supabase: ReturnType<typeof createClient>; onSave: (name: string) => void }) {
   const [username, setUsername] = useState<string>('')
   const [input, setInput] = useState<string>('')
   const [editing, setEditing] = useState(false)
@@ -245,6 +245,7 @@ function UsernameCard({ userId, supabase }: { userId: string; supabase: ReturnTy
     setEditing(false)
     setSuccess(true)
     setTimeout(() => setSuccess(false), 2000)
+    onSave(trimmed)
     window.dispatchEvent(new CustomEvent('username-updated', { detail: trimmed }))
   }
 
@@ -286,14 +287,27 @@ export default function AccountClient() {
   const [user, setUser] = useState<User | null | undefined>(undefined)
   const [sub, setSub] = useState<SubscriptionStatus | null>(null)
   const [subError, setSubError] = useState<string | null>(null)
+  const [profileUsername, setProfileUsername] = useState<string | null>(null)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null))
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null)
+      if (data.user) {
+        supabase.from('profiles').select('username').eq('id', data.user.id).single()
+          .then(({ data: p }) => setProfileUsername(p?.username ?? null))
+      }
+    })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (session?.user) {
+        supabase.from('profiles').select('username').eq('id', session.user.id).single()
+          .then(({ data: p }) => setProfileUsername(p?.username ?? null))
+      } else {
+        setProfileUsername(null)
+      }
     })
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [supabase])
 
   const loadSub = useCallback(async () => {
     if (!user) return
@@ -328,7 +342,7 @@ export default function AccountClient() {
         <div className="text-center mb-12">
           <div className="badge mb-4">Аккаунт</div>
           <h1 className="section-title mb-2">
-            {user ? `Привет${user.email ? ', ' + user.email.split('@')[0] : ''}!` : 'Мой аккаунт'}
+            {user ? `Привет${profileUsername ? ', ' + profileUsername : ''}!` : 'Мой аккаунт'}
           </h1>
           {user && <p className="text-slate-500 text-sm">{user.email}</p>}
         </div>
@@ -350,7 +364,7 @@ export default function AccountClient() {
                 Загружаем данные подписки...
               </div>
             )}
-            <UsernameCard userId={user.id} supabase={supabase} />
+            <UsernameCard userId={user.id} supabase={supabase} onSave={setProfileUsername} />
             {sub && <ReferralCard code={sub.referral_code} onApply={handleApplyReferral} />}
             <div className="pt-2">
               <button
