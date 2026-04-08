@@ -29,7 +29,7 @@ export default function Header() {
     try {
       const supabase = createClient()
 
-      async function loadUsername(userId: string, email: string | undefined) {
+      const loadUsername = async (userId: string, email: string | undefined) => {
         const { data } = await supabase.from('profiles').select('username').eq('id', userId).single()
         setUsername(data?.username || (email ? email.split('@')[0] : null))
       }
