@@ -226,18 +226,16 @@ export default function AccountClient() {
 
   const loadSub = useCallback(async () => {
     if (!user) return
-    try {
-      const data = await getSubscriptionAction()
-      setSub(data)
-    } catch (err: unknown) {
-      setSubError(err instanceof Error ? err.message : 'Ошибка загрузки подписки')
-    }
+    const { data, error } = await getSubscriptionAction()
+    if (error) setSubError(error)
+    else setSub(data as SubscriptionStatus)
   }, [user])
 
   useEffect(() => { loadSub() }, [loadSub])
 
   const handleApplyReferral = useCallback(async (code: string) => {
-    await applyReferralAction(code)
+    const { error } = await applyReferralAction(code)
+    if (error) throw new Error(error)
     await loadSub()
   }, [loadSub])
 

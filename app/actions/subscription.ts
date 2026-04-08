@@ -20,19 +20,29 @@ async function serverFetch(path: string, token: string, options?: RequestInit) {
   return res.json()
 }
 
-export async function getSubscriptionAction() {
-  const supabase = createServerSupabaseClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) throw new Error('Не авторизован')
-  return serverFetch('/subscription', session.access_token)
+export async function getSubscriptionAction(): Promise<{ data?: unknown; error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return { error: 'Не авторизован' }
+    const data = await serverFetch('/subscription', session.access_token)
+    return { data }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Ошибка загрузки подписки' }
+  }
 }
 
-export async function applyReferralAction(code: string) {
-  const supabase = createServerSupabaseClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) throw new Error('Не авторизован')
-  return serverFetch('/referral/apply', session.access_token, {
-    method: 'POST',
-    body: JSON.stringify({ code }),
-  })
+export async function applyReferralAction(code: string): Promise<{ error?: string }> {
+  try {
+    const supabase = createServerSupabaseClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return { error: 'Не авторизован' }
+    await serverFetch('/referral/apply', session.access_token, {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    })
+    return {}
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Ошибка при применении кода' }
+  }
 }
