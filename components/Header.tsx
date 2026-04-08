@@ -28,13 +28,19 @@ export default function Header() {
   useEffect(() => {
     try {
       const supabase = createClient()
+
+      async function loadUsername(userId: string, email: string | undefined) {
+        const { data } = await supabase.from('profiles').select('username').eq('id', userId).single()
+        setUsername(data?.username || (email ? email.split('@')[0] : null))
+      }
+
       supabase.auth.getUser().then(({ data }) => {
-        const email = data.user?.email
-        setUsername(email ? email.split('@')[0] : null)
+        if (data.user) loadUsername(data.user.id, data.user.email)
       })
+
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        const email = session?.user?.email
-        setUsername(email ? email.split('@')[0] : null)
+        if (session?.user) loadUsername(session.user.id, session.user.email)
+        else setUsername(null)
       })
       return () => subscription.unsubscribe()
     } catch {

@@ -213,6 +213,73 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
   )
 }
 
+function UsernameCard({ userId, supabase }: { userId: string; supabase: ReturnType<typeof createClient> }) {
+  const [username, setUsername] = useState<string>('')
+  const [input, setInput] = useState<string>('')
+  const [editing, setEditing] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  useEffect(() => {
+    supabase.from('profiles').select('username').eq('id', userId).single()
+      .then(({ data }) => {
+        const name = data?.username ?? ''
+        setUsername(name)
+        setInput(name)
+      })
+  }, [userId, supabase])
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    const trimmed = input.trim()
+    if (!trimmed) { setError('Никнейм не может быть пустым'); return }
+    if (trimmed.length > 30) { setError('Максимум 30 символов'); return }
+    if (!/^[A-Za-z0-9_\- а-яёА-ЯЁ]+$/.test(trimmed)) { setError('Только буквы, цифры, пробел, - и _'); return }
+    setLoading(true)
+    setError(null)
+    const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', userId)
+    setLoading(false)
+    if (error) { setError('Ошибка сохранения'); return }
+    setUsername(trimmed)
+    setEditing(false)
+    setSuccess(true)
+    setTimeout(() => setSuccess(false), 2000)
+  }
+
+  return (
+    <div className="card p-6">
+      <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Никнейм</p>
+      {editing ? (
+        <form onSubmit={handleSave} className="flex gap-2">
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            maxLength={30}
+            placeholder="Введи никнейм"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-void-800/80 border border-white/10 focus:border-crystal-500/60 text-white placeholder-slate-500 text-sm outline-none transition-colors"
+          />
+          <button type="submit" disabled={loading} className="btn-primary text-sm py-2.5 px-4 disabled:opacity-50">
+            {loading ? '...' : 'Сохранить'}
+          </button>
+          <button type="button" onClick={() => { setEditing(false); setInput(username); setError(null) }} className="btn-secondary text-sm py-2.5 px-4">
+            Отмена
+          </button>
+        </form>
+      ) : (
+        <div className="flex items-center gap-3">
+          <span className="text-white font-medium">{username || <span className="text-slate-500 italic">не задан</span>}</span>
+          <button onClick={() => setEditing(true)} className="text-xs text-slate-400 hover:text-crystal-400 transition-colors">
+            Изменить
+          </button>
+          {success && <span className="text-green-400 text-xs">Сохранено!</span>}
+        </div>
+      )}
+      {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+    </div>
+  )
+}
+
 export default function AccountClient() {
   const supabase = useMemo(() => createClient(), [])
   const [user, setUser] = useState<User | null | undefined>(undefined)
@@ -282,6 +349,7 @@ export default function AccountClient() {
                 Загружаем данные подписки...
               </div>
             )}
+            <UsernameCard userId={user.id} supabase={supabase} />
             {sub && <ReferralCard code={sub.referral_code} onApply={handleApplyReferral} />}
             <div className="pt-2">
               <button
