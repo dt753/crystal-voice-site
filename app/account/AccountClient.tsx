@@ -245,6 +245,7 @@ function UsernameCard({ userId, supabase }: { userId: string; supabase: ReturnTy
     setEditing(false)
     setSuccess(true)
     setTimeout(() => setSuccess(false), 2000)
+    window.dispatchEvent(new CustomEvent('username-updated', { detail: trimmed }))
   }
 
   return (

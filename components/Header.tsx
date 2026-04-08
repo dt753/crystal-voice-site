@@ -48,6 +48,14 @@ export default function Header() {
     }
   }, [])
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setUsername((e as CustomEvent<string>).detail)
+    }
+    window.addEventListener('username-updated', handler)
+    return () => window.removeEventListener('username-updated', handler)
+  }, [])
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
