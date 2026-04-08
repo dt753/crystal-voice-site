@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { getSubscriptionAction, applyReferralAction } from '@/app/actions/subscription'
@@ -214,7 +214,7 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
 }
 
 export default function AccountClient() {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [user, setUser] = useState<User | null | undefined>(undefined)
   const [sub, setSub] = useState<SubscriptionStatus | null>(null)
   const [subError, setSubError] = useState<string | null>(null)
