@@ -240,7 +240,11 @@ function UsernameCard({ userId, supabase, onSave }: { userId: string; supabase: 
     setError(null)
     const { error } = await supabase.from('profiles').update({ username: trimmed }).eq('id', userId)
     setLoading(false)
-    if (error) { setError('Ошибка сохранения'); return }
+    if (error) {
+      if (error.code === '23505') setError('Этот никнейм уже занят')
+      else setError('Ошибка сохранения')
+      return
+    }
     setUsername(trimmed)
     setEditing(false)
     setSuccess(true)
