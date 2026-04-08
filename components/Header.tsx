@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import CrystalGem from './CrystalGem'
+import { createClient } from '@/lib/supabase'
 
 const nav = [
   { href: '/',         label: 'Главная' },
@@ -16,11 +17,29 @@ export default function Header() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [username, setUsername] = useState<string | null>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    try {
+      const supabase = createClient()
+      supabase.auth.getUser().then(({ data }) => {
+        const email = data.user?.email
+        setUsername(email ? email.split('@')[0] : null)
+      })
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const email = session?.user?.email
+        setUsername(email ? email.split('@')[0] : null)
+      })
+      return () => subscription.unsubscribe()
+    } catch {
+      // Supabase not configured
+    }
   }, [])
 
   return (
@@ -63,7 +82,7 @@ export default function Header() {
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           <Link href="/account" className="text-sm text-slate-400 hover:text-white transition-colors">
-            Войти
+            {username ?? 'Войти'}
           </Link>
           <Link
             href="/download"
