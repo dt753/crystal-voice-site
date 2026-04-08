@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-void-900 text-slate-100 font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(109,69,247,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(6,182,212,0.06) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    @apply bg-crystal-600/40 text-crystal-100;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-void-800; }
+  ::-webkit-scrollbar-thumb { @apply bg-crystal-700/60 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-crystal-600/80; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm
+           bg-crystal-600 hover:bg-crystal-500 text-white
+           shadow-crystal-sm hover:shadow-crystal
+           transition-all duration-200 active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm
+           bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 hover:border-crystal-500/30
+           transition-all duration-200 active:scale-[0.98];
+  }
+
+  .card {
+    @apply bg-void-700/50 border border-crystal-700/20 rounded-2xl backdrop-blur-sm;
+  }
+
+  .card-glow {
+    @apply card hover:border-crystal-500/40 hover:shadow-crystal-sm transition-all duration-300;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium
+           bg-crystal-700/20 text-crystal-300 border border-crystal-600/20;
+  }
+
+  .section-title {
+    @apply text-3xl sm:text-4xl font-bold text-white tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-slate-400 text-lg leading-relaxed;
+  }
+
+  /* Animated waveform bars */
+  .wave-bar {
+    @apply bg-crystal-400 rounded-full;
+    animation: wave 1.2s ease-in-out infinite;
+  }
+  .wave-bar:nth-child(1) { animation-delay: 0s; }
+  .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+  .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+  .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+  .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+  .wave-bar:nth-child(6) { animation-delay: 0.45s; }
+  .wave-bar:nth-child(7) { animation-delay: 0.3s; }
+
+  /* Shimmer text */
+  .text-shimmer {
+    background: linear-gradient(90deg, #a78bfa 0%, #e879f9 30%, #22d3ee 50%, #a78bfa 70%, #e879f9 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  /* Noise texture overlay */
+  .noise::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+    border-radius: inherit;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-crystal-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent;
+  }
+}
+
+@keyframes pillCrystal {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-3px); }
+}
+
+/* MDX / prose overrides */
+.prose-crystal {
+  --tw-prose-body: theme('colors.slate.300');
+  --tw-prose-headings: theme('colors.white');
+  --tw-prose-lead: theme('colors.slate.400');
+  --tw-prose-links: theme('colors.crystal.400');
+  --tw-prose-bold: theme('colors.white');
+  --tw-prose-counters: theme('colors.crystal.400');
+  --tw-prose-bullets: theme('colors.crystal.600');
+  --tw-prose-hr: theme('colors.white / 10%');
+  --tw-prose-quotes: theme('colors.slate.300');
+  --tw-prose-quote-borders: theme('colors.crystal.600');
+  --tw-prose-captions: theme('colors.slate.500');
+  --tw-prose-code: theme('colors.crystal.300');
+  --tw-prose-pre-code: theme('colors.slate.200');
+  --tw-prose-pre-bg: theme('colors.void.700 / 80%');
+  --tw-prose-th-borders: theme('colors.white / 10%');
+  --tw-prose-td-borders: theme('colors.white / 5%');
+}
+
+.prose-crystal pre {
+  @apply border border-white/10 rounded-xl;
+}
+
+.prose-crystal code:not(pre code) {
+  @apply bg-crystal-700/20 px-1.5 py-0.5 rounded text-crystal-300 font-mono text-[0.875em] not-italic;
+  font-weight: inherit;
+}
+
+.prose-crystal code:not(pre code)::before,
+.prose-crystal code:not(pre code)::after {
+  content: none;
+}
+
+.prose-crystal a {
+  @apply no-underline border-b border-crystal-500/40 hover:border-crystal-400 transition-colors;
+}
+
+.prose-crystal table {
+  @apply border border-white/10 rounded-xl overflow-hidden;
+}
+
+.prose-crystal thead {
+  @apply bg-void-700/80;
+}
+
+.prose-crystal blockquote {
+  @apply bg-crystal-700/10 rounded-r-xl not-italic;
+}
+
+.prose-crystal blockquote p::before,
+.prose-crystal blockquote p::after {
+  content: none;
+}
