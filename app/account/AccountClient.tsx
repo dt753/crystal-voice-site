@@ -142,7 +142,7 @@ function CrystalsCard({ balance, referralCount, referralCode }: { balance: numbe
             <CrystalGem size={20} />
             <span className="text-3xl font-bold text-white">{balance.toLocaleString('ru')}</span>
           </div>
-          <p className="text-slate-500 text-xs mt-1">≈ {Math.round(balance * 0.3)} мин транскрипции</p>
+          <p className="text-slate-500 text-xs mt-1">{balance} мин транскрипции</p>
         </div>
         <Link href="/pricing" className="text-xs text-crystal-400 hover:text-crystal-300 transition-colors shrink-0">
           Как заработать →
@@ -162,7 +162,7 @@ function CrystalsCard({ balance, referralCount, referralCode }: { balance: numbe
             />
           </div>
           <p className="text-slate-500 text-xs mt-2 flex items-center gap-1">
-            +200 <CrystalGem size={11} /> за каждого приглашённого друга
+            +200 <span style={{ filter: 'brightness(1.4)' }}><CrystalGem size={11} /></span> = +200 мин за каждого приглашённого друга
           </p>
         </div>
       )}
