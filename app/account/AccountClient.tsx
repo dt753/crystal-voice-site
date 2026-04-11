@@ -103,11 +103,11 @@ function SubscriptionCard({ sub }: { sub: SubscriptionStatus }) {
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${sub.active ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
             <span className={`font-bold text-lg ${sub.active ? 'text-white' : 'text-slate-400'}`}>
-              {sub.active ? 'Premium активен' : 'Бесплатный план'}
+              {sub.active ? 'Старт активен' : 'Free план'}
             </span>
           </div>
         </div>
-        {sub.active && <span className="badge">✦ Premium</span>}
+        {sub.active && <span className="badge">✦ Старт</span>}
       </div>
       {sub.active && expiresAt && (
         <p className="text-slate-400 text-sm mb-4">
@@ -117,11 +117,51 @@ function SubscriptionCard({ sub }: { sub: SubscriptionStatus }) {
       {!sub.active && (
         <div className="mt-2">
           <p className="text-slate-400 text-sm mb-4">
-            Переходи на Premium — неограниченная транскрипция и реферальная программа.
+            Переходи на Старт или Pro — неограниченная транскрипция и бонусные кристаллы за рефералов.
           </p>
           <Link href="/pricing" className="btn-primary text-sm py-2.5">
-            Перейти на Premium
+            Посмотреть тарифы
           </Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CrystalsCard({ balance, referralCount, referralCode }: { balance: number; referralCount: number; referralCode: string | null }) {
+  const MAX_REFERRALS = 5
+  const progress = Math.min(referralCount / MAX_REFERRALS, 1)
+
+  return (
+    <div className="card p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">Кристаллы</p>
+          <div className="flex items-center gap-2">
+            <span className="text-3xl font-bold text-white">💎 {balance.toLocaleString('ru')}</span>
+          </div>
+          <p className="text-slate-500 text-xs mt-1">≈ {Math.round(balance * 0.3)} мин транскрипции</p>
+        </div>
+        <Link href="/pricing" className="text-xs text-crystal-400 hover:text-crystal-300 transition-colors shrink-0">
+          Как заработать →
+        </Link>
+      </div>
+
+      {referralCode && (
+        <div className="mt-4 pt-4 border-t border-white/5">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-slate-500">Рефералы</p>
+            <p className="text-xs text-slate-400">{referralCount} / {MAX_REFERRALS}</p>
+          </div>
+          <div className="w-full h-1.5 bg-void-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-crystal-600 to-crystal-400 rounded-full transition-all duration-500"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+          <p className="text-slate-500 text-xs mt-2">
+            +200 💎 за каждого приглашённого друга
+          </p>
         </div>
       )}
     </div>
@@ -143,6 +183,10 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
   const [copied, setCopied] = useState(false)
   const [lastAttempt, setLastAttempt] = useState(0)
 
+  const referralLink = typeof window !== 'undefined' && code
+    ? `${window.location.origin}/account?ref=${code}`
+    : null
+
   async function handleApply(e: React.FormEvent) {
     e.preventDefault()
     const validationError = validateReferralCode(input)
@@ -161,9 +205,9 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
     }
   }
 
-  function copyCode() {
-    if (!code) return
-    navigator.clipboard.writeText(code)
+  function copyLink() {
+    const toCopy = referralLink ?? code ?? ''
+    navigator.clipboard.writeText(toCopy)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -172,23 +216,25 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
     <div className="card p-6 space-y-6">
       {code && (
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Мой реферальный код</p>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-void-800/80 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-crystal-300 tracking-widest text-sm">
-              {code}
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Моя реферальная ссылка</p>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex-1 min-w-0 bg-void-800/80 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-crystal-300 tracking-wide text-xs truncate">
+              {referralLink ?? code}
             </div>
-            <button onClick={copyCode} className="btn-secondary px-4 py-2.5 text-sm shrink-0">
+            <button onClick={copyLink} className="btn-secondary px-4 py-2.5 text-sm shrink-0">
               {copied ? 'Скопировано!' : 'Копировать'}
             </button>
           </div>
-          <p className="text-slate-500 text-xs mt-2">Поделись кодом — и ты, и друг получите +30 дней Premium</p>
+          <p className="text-slate-500 text-xs">
+            Код: <span className="text-crystal-400 font-mono">{code}</span> · Поделись ссылкой — друг получит +30 дней Старт, ты — 💎 +200 кристаллов
+          </p>
         </div>
       )}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Применить чужой код</p>
         {success ? (
           <div className="flex items-center gap-2 text-green-400 text-sm">
-            <span>✓</span><span>Код применён! +30 дней Premium добавлены.</span>
+            <span>✓</span><span>Код применён! +30 дней Старт и 💎 кристаллы добавлены.</span>
           </div>
         ) : (
           <form onSubmit={handleApply} className="flex gap-2">
@@ -292,26 +338,48 @@ export default function AccountClient() {
   const [sub, setSub] = useState<SubscriptionStatus | null>(null)
   const [subError, setSubError] = useState<string | null>(null)
   const [profileUsername, setProfileUsername] = useState<string | null>(null)
+  const [crystalBalance, setCrystalBalance] = useState<number>(0)
+  const [referralCount, setReferralCount] = useState<number>(0)
+
+  const loadProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('username, crystal_balance')
+      .eq('id', userId)
+      .single()
+    setProfileUsername(data?.username ?? null)
+    setCrystalBalance(data?.crystal_balance ?? 0)
+  }, [supabase])
+
+  const loadReferralCount = useCallback(async (userId: string) => {
+    const { count } = await supabase
+      .from('referrals')
+      .select('id', { count: 'exact', head: true })
+      .eq('referrer_id', userId)
+    setReferralCount(count ?? 0)
+  }, [supabase])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null)
       if (data.user) {
-        supabase.from('profiles').select('username').eq('id', data.user.id).single()
-          .then(({ data: p }) => setProfileUsername(p?.username ?? null))
+        loadProfile(data.user.id)
+        loadReferralCount(data.user.id)
       }
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        supabase.from('profiles').select('username').eq('id', session.user.id).single()
-          .then(({ data: p }) => setProfileUsername(p?.username ?? null))
+        loadProfile(session.user.id)
+        loadReferralCount(session.user.id)
       } else {
         setProfileUsername(null)
+        setCrystalBalance(0)
+        setReferralCount(0)
       }
     })
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [supabase, loadProfile, loadReferralCount])
 
   const loadSub = useCallback(async () => {
     if (!user) return
@@ -330,7 +398,8 @@ export default function AccountClient() {
     const { error } = await applyReferralAction(session.access_token, code)
     if (error) throw new Error(error)
     await loadSub()
-  }, [supabase.auth, loadSub])
+    if (user) loadProfile(user.id)
+  }, [supabase.auth, loadSub, loadProfile, user])
 
   if (user === undefined) {
     return (
@@ -368,8 +437,17 @@ export default function AccountClient() {
                 Загружаем данные подписки...
               </div>
             )}
+
+            <CrystalsCard
+              balance={crystalBalance}
+              referralCount={referralCount}
+              referralCode={sub?.referral_code ?? null}
+            />
+
             <UsernameCard userId={user.id} supabase={supabase} onSave={setProfileUsername} />
+
             {sub && <ReferralCard code={sub.referral_code} onApply={handleApplyReferral} />}
+
             <div className="pt-2">
               <button
                 onClick={() => supabase.auth.signOut()}
