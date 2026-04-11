@@ -35,13 +35,15 @@ const tiers = [
     subtitle: 'Попробовать',
     monthly: 0,
     yearly: 0,
+    crystals: '30',
+    crystalsNote: '≈ 30 мин / мес',
     popular: false,
     highlight: false,
     features: [
-      { text: '100 кристаллов (100 мин) при старте', dim: false, gem: true },
       { text: 'Все поддерживаемые языки', dim: false },
       { text: 'Хоткей Caps Lock × 2', dim: false },
       { text: 'Windows и Mac', dim: false },
+      { text: 'Без привязки карты', dim: false },
       { text: 'Реферальная программа', dim: true },
     ],
     cta: 'Скачать бесплатно',
@@ -57,21 +59,22 @@ const tiers = [
     subtitle: 'Для активных',
     monthly: 199,
     yearly: 1690,
-    popular: true,
-    highlight: true,
+    crystals: '300',
+    crystalsNote: '≈ 300 мин / мес',
+    popular: false,
+    highlight: false,
     features: [
-      { text: 'Неограниченная транскрипция', dim: false },
       { text: 'Все поддерживаемые языки', dim: false },
-      { text: '+200 кристаллов за каждого друга', dim: false, gem: true },
       { text: 'Реферальная программа (до 5 друзей)', dim: false },
+      { text: '+200 кристаллов за каждого друга', dim: false, gem: true },
       { text: 'Хоткей Caps Lock × 2', dim: false },
     ],
     cta: 'Начать',
     ctaHref: '/account',
     ctaPrimary: true,
-    border: 'border-crystal-500/40',
-    glow: 'shadow-crystal',
-    gradient: 'from-crystal-700/15 via-transparent to-transparent',
+    border: 'border-crystal-500/25',
+    glow: '',
+    gradient: '',
   },
   {
     key: 'pro',
@@ -79,28 +82,29 @@ const tiers = [
     subtitle: 'Максимум',
     monthly: 399,
     yearly: 3390,
-    popular: false,
-    highlight: false,
+    crystals: '2 000',
+    crystalsNote: '≈ 2 000 мин / мес',
+    popular: true,
+    highlight: true,
     features: [
       { text: 'Всё из тарифа Старт', dim: false },
       { text: 'Приоритетная обработка запросов', dim: false },
       { text: '+300 кристаллов за каждого друга', dim: false, gem: true },
       { text: 'Ранний доступ к новым функциям', dim: false },
-      { text: 'Расширенная статистика', dim: false },
     ],
     cta: 'Получить Pro',
     ctaHref: '/account',
     ctaPrimary: true,
-    border: 'border-violet-500/30',
-    glow: 'hover:shadow-[0_0_40px_rgba(139,92,246,0.2)]',
-    gradient: 'from-violet-700/10 via-transparent to-transparent',
+    border: 'border-violet-500/40',
+    glow: 'shadow-[0_0_30px_rgba(139,92,246,0.25)]',
+    gradient: '',
   },
 ]
 
 const faq = [
   {
     q: 'Что такое кристаллы?',
-    a: 'Кристаллы — внутренняя валюта Crystal Voice. 1 кристалл = 1 минута транскрипции. Новые пользователи получают 100 кристаллов при регистрации. Дополнительные кристаллы зарабатываются через реферальную программу.',
+    a: 'Кристаллы — внутренняя валюта Crystal Voice. 1 кристалл = 1 минута транскрипции. Они отображают твой остаток и не сгорают в середине месяца — только обнуляются при старте нового расчётного периода.',
   },
   {
     q: 'Нужна ли карта для бесплатного плана?',
@@ -108,7 +112,11 @@ const faq = [
   },
   {
     q: 'Как работает реферальная программа?',
-    a: 'После регистрации ты получаешь уникальный код. Друг регистрируется с ним — вы оба получаете бонусные кристаллы, а друг — +30 дней тарифа Старт. Максимум 5 рефералов на один аккаунт.',
+    a: 'Поделись своим кодом с другом. Он получит +100 кристаллов к первому месяцу Free (итого 130). Ты получишь +200 кристаллов сразу. Если друг купит подписку — ты дополнительно получишь +30 дней тарифа Старт. Максимум 5 рефералов на аккаунт.',
+  },
+  {
+    q: 'Можно ли накопить кристаллы?',
+    a: 'Нет, баланс обнуляется каждый месяц. Но бонусные кристаллы от реферальной программы действуют до конца текущего расчётного периода.',
   },
   {
     q: 'Можно ли перейти с Старт на Pro?',
@@ -182,23 +190,20 @@ export default function PricingClient() {
                 key={tier.key}
                 className={`relative card flex flex-col p-6 sm:p-8 border ${tier.border} ${tier.glow} transition-all duration-300`}
               >
-                {tier.gradient && (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${tier.gradient} rounded-2xl pointer-events-none`} />
-                )}
-                {tier.key === 'pro' && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-700/10 via-transparent to-transparent rounded-2xl pointer-events-none" />
+                {tier.highlight && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-700/15 via-transparent to-transparent rounded-2xl pointer-events-none" />
                 )}
 
                 {/* Popular badge */}
                 {tier.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1 rounded-full text-xs font-semibold bg-crystal-600 text-white shadow-crystal-sm">
+                    <span className="px-4 py-1 rounded-full text-xs font-semibold bg-violet-600 text-white shadow-[0_0_12px_rgba(139,92,246,0.5)]">
                       Популярный
                     </span>
                   </div>
                 )}
 
-                {tier.key === 'start' && (
+                {tier.highlight && (
                   <CrystalGem size={11} className="absolute top-4 right-4 opacity-40 animate-float" />
                 )}
 
@@ -238,6 +243,23 @@ export default function PricingClient() {
                       </span> — сэкономь 2+ мес
                     </p>
                   )}
+                </div>
+
+                {/* Crystals stat */}
+                <div className={`relative flex items-center gap-3 rounded-xl px-4 py-3 mb-6 border ${
+                  tier.key === 'free' ? 'bg-white/5 border-white/10' :
+                  tier.key === 'start' ? 'bg-crystal-700/20 border-crystal-500/25' :
+                  'bg-violet-700/20 border-violet-500/25'
+                }`}>
+                  <Gem size={16} />
+                  <div>
+                    <span className={`text-xl font-bold tabular-nums ${
+                      tier.key === 'free' ? 'text-white' :
+                      tier.key === 'start' ? 'text-crystal-300' :
+                      'text-violet-300'
+                    }`}>{tier.crystals} кристаллов</span>
+                    <p className="text-slate-500 text-xs mt-0.5">{tier.crystalsNote}</p>
+                  </div>
                 </div>
 
                 <ul className="relative space-y-3 mb-8 flex-1">
