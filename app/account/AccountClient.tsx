@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { getSubscriptionAction, applyReferralAction } from '@/app/actions/subscription'
+import CrystalGem from '@/components/CrystalGem'
 import type { User } from '@supabase/supabase-js'
 import type { SubscriptionStatus } from '@/lib/supabase'
 
@@ -138,7 +139,8 @@ function CrystalsCard({ balance, referralCount, referralCode }: { balance: numbe
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">Кристаллы</p>
           <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold text-white">💎 {balance.toLocaleString('ru')}</span>
+            <CrystalGem size={20} />
+            <span className="text-3xl font-bold text-white">{balance.toLocaleString('ru')}</span>
           </div>
           <p className="text-slate-500 text-xs mt-1">≈ {Math.round(balance * 0.3)} мин транскрипции</p>
         </div>
@@ -159,8 +161,8 @@ function CrystalsCard({ balance, referralCount, referralCode }: { balance: numbe
               style={{ width: `${progress * 100}%` }}
             />
           </div>
-          <p className="text-slate-500 text-xs mt-2">
-            +200 💎 за каждого приглашённого друга
+          <p className="text-slate-500 text-xs mt-2 flex items-center gap-1">
+            +200 <CrystalGem size={11} /> за каждого приглашённого друга
           </p>
         </div>
       )}
@@ -183,10 +185,6 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
   const [copied, setCopied] = useState(false)
   const [lastAttempt, setLastAttempt] = useState(0)
 
-  const referralLink = typeof window !== 'undefined' && code
-    ? `${window.location.origin}/account?ref=${code}`
-    : null
-
   async function handleApply(e: React.FormEvent) {
     e.preventDefault()
     const validationError = validateReferralCode(input)
@@ -205,9 +203,9 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
     }
   }
 
-  function copyLink() {
-    const toCopy = referralLink ?? code ?? ''
-    navigator.clipboard.writeText(toCopy)
+  function copyCode() {
+    if (!code) return
+    navigator.clipboard.writeText(code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -216,25 +214,25 @@ function ReferralCard({ code, onApply }: { code: string | null; onApply: (c: str
     <div className="card p-6 space-y-6">
       {code && (
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Моя реферальная ссылка</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Мой реферальный код</p>
           <div className="flex items-center gap-2 mb-2">
-            <div className="flex-1 min-w-0 bg-void-800/80 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-crystal-300 tracking-wide text-xs truncate">
-              {referralLink ?? code}
+            <div className="flex-1 bg-void-800/80 border border-white/10 rounded-xl px-4 py-2.5 font-mono text-crystal-300 tracking-widest text-sm">
+              {code}
             </div>
-            <button onClick={copyLink} className="btn-secondary px-4 py-2.5 text-sm shrink-0">
+            <button onClick={copyCode} className="btn-secondary px-4 py-2.5 text-sm shrink-0">
               {copied ? 'Скопировано!' : 'Копировать'}
             </button>
           </div>
-          <p className="text-slate-500 text-xs">
-            Код: <span className="text-crystal-400 font-mono">{code}</span> · Поделись ссылкой — друг получит +30 дней Старт, ты — 💎 +200 кристаллов
+          <p className="text-slate-500 text-xs flex items-center gap-1 flex-wrap">
+            Поделись кодом — друг получит +30 дней Старт, ты — +200 <CrystalGem size={11} /> кристаллов
           </p>
         </div>
       )}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Применить чужой код</p>
         {success ? (
-          <div className="flex items-center gap-2 text-green-400 text-sm">
-            <span>✓</span><span>Код применён! +30 дней Старт и 💎 кристаллы добавлены.</span>
+          <div className="flex items-center gap-2 text-green-400 text-sm flex-wrap">
+            <span>✓</span><span>Код применён! +30 дней Старт и кристаллы добавлены.</span>
           </div>
         ) : (
           <form onSubmit={handleApply} className="flex gap-2">
@@ -342,13 +340,23 @@ export default function AccountClient() {
   const [referralCount, setReferralCount] = useState<number>(0)
 
   const loadProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('username, crystal_balance')
       .eq('id', userId)
       .single()
-    setProfileUsername(data?.username ?? null)
-    setCrystalBalance(data?.crystal_balance ?? 0)
+    if (data) {
+      setProfileUsername(data.username ?? null)
+      setCrystalBalance(data.crystal_balance ?? 0)
+    } else if (error) {
+      // Fallback: crystal_balance column may not exist yet (migration pending)
+      const { data: fallback } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', userId)
+        .single()
+      setProfileUsername(fallback?.username ?? null)
+    }
   }, [supabase])
 
   const loadReferralCount = useCallback(async (userId: string) => {

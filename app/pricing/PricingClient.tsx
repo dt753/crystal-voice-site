@@ -4,6 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import CrystalGem from '@/components/CrystalGem'
 
+function Gem({ size = 13 }: { size?: number }) {
+  return <CrystalGem size={size} className="inline-block shrink-0" />
+}
+
 function CheckIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
@@ -30,7 +34,7 @@ const tiers = [
     popular: false,
     highlight: false,
     features: [
-      { text: '💎 100 кристаллов (~30 мин) при старте', dim: false },
+      { text: '100 кристаллов (~30 мин) при старте', dim: false, gem: true },
       { text: 'Все поддерживаемые языки', dim: false },
       { text: 'Хоткей Caps Lock × 2', dim: false },
       { text: 'Windows и Mac', dim: false },
@@ -55,7 +59,7 @@ const tiers = [
     features: [
       { text: 'Неограниченная транскрипция', dim: false },
       { text: 'Все поддерживаемые языки', dim: false },
-      { text: '💎 +200 кристаллов за каждого друга', dim: false },
+      { text: '+200 кристаллов за каждого друга', dim: false, gem: true },
       { text: 'Реферальная программа (до 5 друзей)', dim: false },
       { text: 'Email-поддержка', dim: false },
       { text: 'Хоткей Caps Lock × 2', dim: false },
@@ -78,7 +82,7 @@ const tiers = [
     features: [
       { text: 'Всё из тарифа Старт', dim: false },
       { text: 'Приоритетная обработка запросов', dim: false },
-      { text: '💎 +300 кристаллов за каждого друга', dim: false },
+      { text: '+300 кристаллов за каждого друга', dim: false, gem: true },
       { text: 'Ранний доступ к новым функциям', dim: false },
       { text: 'Расширенная статистика', dim: false },
       { text: 'Приоритетная поддержка', dim: false },
@@ -95,7 +99,7 @@ const tiers = [
 const faq = [
   {
     q: 'Что такое кристаллы?',
-    a: 'Кристаллы 💎 — внутренняя валюта Crystal Voice. 100 кристаллов = ~30 минут транскрипции. Новые пользователи получают 100 кристаллов при регистрации. Дополнительные кристаллы зарабатываются через реферальную программу.',
+    a: 'Кристаллы — внутренняя валюта Crystal Voice. 100 кристаллов = ~30 минут транскрипции. Новые пользователи получают 100 кристаллов при регистрации. Дополнительные кристаллы зарабатываются через реферальную программу.',
   },
   {
     q: 'Нужна ли карта для бесплатного плана?',
@@ -136,8 +140,8 @@ export default function PricingClient() {
         <div className="text-center mb-10 sm:mb-14">
           <div className="badge mb-4">Тарифы</div>
           <h1 className="section-title mb-4">Простые и честные цены</h1>
-          <p className="section-subtitle max-w-lg mx-auto">
-            Начни бесплатно с 💎 кристаллами. Перейди на платный тариф когда понадобится больше.
+          <p className="section-subtitle max-w-lg mx-auto flex items-center justify-center gap-2 flex-wrap">
+            Начни бесплатно с <Gem size={14} /> кристаллами. Перейди на платный тариф когда понадобится больше.
           </p>
 
           {/* Toggle */}
@@ -239,7 +243,10 @@ export default function PricingClient() {
                   {tier.features.map((f) => (
                     <li key={f.text} className={`flex items-start gap-3 text-sm ${f.dim ? 'text-slate-600' : 'text-slate-300'}`}>
                       {f.dim ? <DimCheckIcon /> : <CheckIcon />}
-                      {f.text}
+                      <span className="flex items-center gap-1.5 flex-wrap">
+                        {f.gem && <Gem size={12} />}
+                        {f.text}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -265,7 +272,7 @@ export default function PricingClient() {
         <div className="mb-16 max-w-3xl mx-auto">
           <div className="card p-6 sm:p-8 border border-crystal-500/20">
             <div className="flex items-start gap-4">
-              <div className="text-3xl shrink-0">💎</div>
+              <CrystalGem size={32} className="shrink-0 mt-1" />
               <div>
                 <h3 className="font-bold text-white text-lg mb-2">Система кристаллов</h3>
                 <p className="text-slate-400 text-sm leading-relaxed mb-4">
